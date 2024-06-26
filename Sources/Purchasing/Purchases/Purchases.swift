@@ -971,61 +971,74 @@ public extension Purchases {
     }
     
     @available(iOS 15.0, *)
-    func purchase(product: SK2Product, appAccountTokenOption: Product.PurchaseOption, completion: @escaping PurchaseCompletedBlock) {
-        self.purchasesOrchestrator.purchase(
-            sk2Product: product,
-            package: nil,
-            promotionalOffer: nil,
-            appAccountTokenOption: appAccountTokenOption,
-            completion: completion
-        )
+    func purchase(product: SK2Product, appAccountTokenOption: Product.PurchaseOption) async throws -> PurchaseResultData {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: nil,
+                appAccountTokenOption: appAccountTokenOption
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
     }
 
     @available(iOS 15.0, *)
-    func purchase(sk2Package package: Package, appAccountTokenOption: Product.PurchaseOption?, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk2Package package: Package, appAccountTokenOption: Product.PurchaseOption?) async throws -> PurchaseResultData {
         guard let sk2Product = package.storeProduct.sk2Product else {
             fatalError()
         }
-        self.purchasesOrchestrator.purchase(
-            sk2Product: sk2Product,
-            package: package,
-            promotionalOffer: nil,
-            appAccountTokenOption: appAccountTokenOption,
-            completion: completion
-        )
+        return try await withCheckedThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                sk2Product: sk2Product,
+                package: package,
+                promotionalOffer: nil,
+                appAccountTokenOption: appAccountTokenOption
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
     }
 
     @available(iOS 15.0, *)
     func purchase(product: SK2Product,
                   promotionalOffer: PromotionalOffer,
-                  appAccountTokenOption: Product.PurchaseOption,
-                  completion: @escaping PurchaseCompletedBlock)
+                  appAccountTokenOption: Product.PurchaseOption) async throws -> PurchaseResultData
     {
-        self.purchasesOrchestrator.purchase(
-            sk2Product: product,
-            package: nil,
-            promotionalOffer: promotionalOffer.signedData,
-            appAccountTokenOption: appAccountTokenOption,
-            completion: completion
-        )
+        return try await withCheckedThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: promotionalOffer.signedData,
+                appAccountTokenOption: appAccountTokenOption
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
     }
 
     @available(iOS 15.0, *)
     func purchase(sk2Package package: Package,
                   promotionalOffer: PromotionalOffer,
-                  appAccountTokenOption: Product.PurchaseOption?,
-                  promotionalOffer completion: @escaping PurchaseCompletedBlock)
+                  appAccountTokenOption: Product.PurchaseOption?) async throws -> PurchaseResultData
     {
         guard let sk2Product = package.storeProduct.sk2Product else {
             fatalError()
         }
-        self.purchasesOrchestrator.purchase(
-            sk2Product: sk2Product,
-            package: nil,
-            promotionalOffer: promotionalOffer.signedData,
-            appAccountTokenOption: appAccountTokenOption,
-            completion: completion
-        )
+        return try await withCheckedThrowingContinuation { continuation in
+            self.purchasesOrchestrator.purchase(
+                sk2Product: sk2Product,
+                package: package,
+                promotionalOffer: promotionalOffer.signedData,
+                appAccountTokenOption: appAccountTokenOption ) { transaction, customerInfo, error, userCancelled in
+                    continuation.resume(with: Result(customerInfo, error)
+                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+                }
+        }
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
