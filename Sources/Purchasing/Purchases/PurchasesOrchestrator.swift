@@ -310,6 +310,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: nil,
+                          appAccountTokenOption: nil,
                           completion: completion)
         } else if product.isTestProduct {
             self.handleTestProduct(completion)
@@ -338,6 +339,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: promotionalOffer,
+                          appAccountTokenOption: nil,
                           completion: completion)
         } else if product.isTestProduct {
             self.handleTestProduct(completion)
@@ -427,12 +429,14 @@ final class PurchasesOrchestrator {
     func purchase(sk2Product product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
+                  appAccountTokenOption: Product.PurchaseOption?,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
                                                                          package: package,
-                                                                         promotionalOffer: promotionalOffer)
+                                                                         promotionalOffer: promotionalOffer, 
+                                                                         appAccountTokenOption: appAccountTokenOption)
 
                 if !result.userCancelled {
                     Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
@@ -466,14 +470,20 @@ final class PurchasesOrchestrator {
     func purchase(
         sk2Product: SK2Product,
         package: Package?,
-        promotionalOffer: PromotionalOffer.SignedData?
+        promotionalOffer: PromotionalOffer.SignedData?,
+        appAccountTokenOption: Product.PurchaseOption?
     ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
+
             var options: Set<Product.PurchaseOption> = [
                 .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
             ]
+            
+            if let appAccountTokenOption {
+                options.insert(appAccountTokenOption)
+            }
 
             if let signedData = promotionalOffer {
                 Logger.debug(

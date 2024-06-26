@@ -969,6 +969,64 @@ public extension Purchases {
     func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
+    
+    @available(iOS 15.0, *)
+    func purchase(product: SK2Product, appAccountTokenOption: Product.PurchaseOption, completion: @escaping PurchaseCompletedBlock) {
+        self.purchasesOrchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            appAccountTokenOption: appAccountTokenOption,
+            completion: completion
+        )
+    }
+
+    @available(iOS 15.0, *)
+    func purchase(sk2Package package: Package, appAccountTokenOption: Product.PurchaseOption?, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk2Product = package.storeProduct.sk2Product else {
+            fatalError()
+        }
+        self.purchasesOrchestrator.purchase(
+            sk2Product: sk2Product,
+            package: package,
+            promotionalOffer: nil,
+            appAccountTokenOption: appAccountTokenOption,
+            completion: completion
+        )
+    }
+
+    @available(iOS 15.0, *)
+    func purchase(product: SK2Product,
+                  promotionalOffer: PromotionalOffer,
+                  appAccountTokenOption: Product.PurchaseOption,
+                  completion: @escaping PurchaseCompletedBlock)
+    {
+        self.purchasesOrchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: promotionalOffer.signedData,
+            appAccountTokenOption: appAccountTokenOption,
+            completion: completion
+        )
+    }
+
+    @available(iOS 15.0, *)
+    func purchase(sk2Package package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  appAccountTokenOption: Product.PurchaseOption?,
+                  promotionalOffer completion: @escaping PurchaseCompletedBlock)
+    {
+        guard let sk2Product = package.storeProduct.sk2Product else {
+            fatalError()
+        }
+        self.purchasesOrchestrator.purchase(
+            sk2Product: sk2Product,
+            package: nil,
+            promotionalOffer: promotionalOffer.signedData,
+            appAccountTokenOption: appAccountTokenOption,
+            completion: completion
+        )
+    }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         self.purchasesOrchestrator.restorePurchases { @Sendable in
