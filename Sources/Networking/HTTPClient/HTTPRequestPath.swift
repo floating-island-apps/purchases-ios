@@ -91,7 +91,7 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    static let serverHostURL = URL(string: "https://rc.floatingislandapps.com")!
+    static let serverHostURL = URL(string: "https://revenuecat.openallen.workers.dev")!
 
     var authenticated: Bool {
         switch self {
