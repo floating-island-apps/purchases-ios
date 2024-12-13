@@ -91,7 +91,18 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    static let serverHostURL = URL(string: "https://grow.md.studio")!
+    static var serverHostURL: URL = {
+        let isChinaRegion: Bool = {
+            if #available(iOS 16, watchOS 9, *) {
+                return Locale.current.language.region?.identifier == "CN"
+            }
+            return Locale.current.regionCode == "CN"
+        }()
+        
+        return URL(string: isChinaRegion
+            ? "https://revenuecat.trygrow.app"
+            : "https://api.revenuecat.com")!
+    }()
 
     var authenticated: Bool {
         switch self {
